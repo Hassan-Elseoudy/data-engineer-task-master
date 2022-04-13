@@ -1,17 +1,19 @@
 import datetime as dt
 import enum
 import ipaddress
-
-from flask import Flask, jsonify, request
 from collections import defaultdict
 
+from flask import Flask, jsonify, request
+from intervaltree import IntervalTree
+
 from balanced_binary_search_tree import BST, Node
-from intervaltree import Interval, IntervalTree
+
 
 class UserStatus(enum.Enum):
     PAYING = "paying",
     CANCELLED = "cancelled"
     NOT_PAYING = "not_paying"
+    NA = "NA"
 
 
 class UserStatusSearch:
@@ -37,6 +39,8 @@ class UserStatusSearch:
             self.USER_RECORDS_BST[k] = self.bst.array_to_bst(sorted(v))
 
     def get_status(self, user_id, date):
+        if user_id not in self.USER_RECORDS_BST:
+            return UserStatus.NA
         self.bst.get_nearest_status(self.USER_RECORDS_BST[user_id], date)
 
 
@@ -61,7 +65,8 @@ class IpRangeSearch:
                 self.interval_tree.addi(ipaddress.ip_address(r['start']), ipaddress.ip_address(r['end']), city)
 
     def get_city(self, ip):
-        return self.interval_tree.at(ipaddress.ip_address(ip))
+        city = self.interval_tree.at(ipaddress.ip_address(ip))
+        return city or 'NA'
 
 
 app = Flask(__name__)
@@ -76,7 +81,11 @@ def user_status(user_id):
 
     /user_status/1?date=2017-10-10T10:00:00
     """
-    date = dt.datetime.strptime(str(request.args.get('date')), '%Y-%m-%dT%H:%M:%S')
+
+    try:
+        date = dt.datetime.strptime(str(request.args.get('date')), '%Y-%m-%dT%H:%M:%S')
+    except ValueError:
+        return jsonify({'error': 'Invalid date format'})
 
     return jsonify({'user_status': user_status_search.get_status(int(user_id), date)})
 
