@@ -35,7 +35,7 @@ class UserStatusSearch:
 
     def get_status(self, user_id: int, date: dt.datetime):
         if user_id not in self.USER_RECORDS_BST:
-            return UserStatus.NA
+            return UserStatus.NOT_PAYING.name
         return self.bst.get_nearest_status(self.USER_RECORDS_BST[user_id], date).data.status.name
 
 
@@ -109,7 +109,7 @@ def aggregate():
             t['user_status'] = user_status_search.get_status(int(t['user_id']), dt.datetime.strptime(t["created_at"], '%Y-%m-%dT%H:%M:%S'))
 
     df = pd.DataFrame.from_records(transactions)
-    return jsonify(df.groupby(['user_status', 'city'])['product_price'].agg('sum').to_json())
+    return df.groupby(['city', 'user_status'])['product_price'].agg('sum').reset_index().to_json(orient='records')
 
 
 if __name__ == '__main__':

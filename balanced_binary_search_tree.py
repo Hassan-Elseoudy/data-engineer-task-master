@@ -8,14 +8,12 @@ class UserStatus(enum.Enum):
     PAYING = "paying",
     CANCELLED = "cancelled"
     NOT_PAYING = "not_paying"
-    NA = "NA"
 
 
 USER_STATUS_DICT = {
     "paying": UserStatus.PAYING,
     "cancelled": UserStatus.CANCELLED,
     "not_paying": UserStatus.NOT_PAYING,
-    "NA": UserStatus.NA,
 }
 
 
