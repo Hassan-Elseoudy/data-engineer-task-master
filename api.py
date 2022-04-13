@@ -102,10 +102,11 @@ def aggregate():
     """
     transactions = []
     with open('./transactions.json') as f:
-        transactions = json.load(f)
+        for line in f:
+            transactions.append(json.loads(line))
         for t in transactions:
-            t['city'] = ip_city(t['ip'])['city']
-            t['user_status'] = ip_city(t['created_at'])['user_status']
+            t['city'] = ip_city(t['ip']).json["city"]
+            t['user_status'] = user_status_search.get_status(int(t['user_id']), dt.datetime.strptime(t["created_at"], '%Y-%m-%dT%H:%M:%S'))
 
     df = pd.DataFrame.from_records(transactions)
     return jsonify(df.groupby(['user_status', 'city'])['product_price'].agg('sum').to_json())
