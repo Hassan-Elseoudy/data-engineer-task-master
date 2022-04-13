@@ -1,13 +1,14 @@
 import datetime as dt
 import enum
 import ipaddress
+import json
 from collections import defaultdict
 
 from flask import Flask, jsonify, request
 from intervaltree import IntervalTree
 
 from balanced_binary_search_tree import BST, Node
-
+import pandas as pd
 
 class UserStatus(enum.Enum):
     PAYING = "paying",
@@ -100,5 +101,21 @@ def ip_city(ip):
     return jsonify({'city': ip_range_search.get_city(ip)})
 
 
+@app.route('/transactions')
+def aggregate():
+    """
+    aggregate containing the sum of product_price grouped by user_status and city.
+    """
+    transactions = []
+    with open('./transactions.json') as f:
+        transactions = json.load(f)
+        for t in transactions:
+            t['city'] = ip_city(t['ip'])['city']
+            t['user_status'] = ip_city(t['created_at'])['user_status']
+
+    df = pd.DataFrame.from_records(transactions)
+    return jsonify(df.groupby(['user_status', 'city'])['product_price'].agg('sum').to_json())
+
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(debug=True)
