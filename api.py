@@ -2,6 +2,9 @@ import datetime as dt
 import enum
 
 from flask import Flask, jsonify, request
+from collections import defaultdict
+
+from balanced_binary_search_tree import BST, Node
 
 
 class UserStatus(enum.Enum):
@@ -11,7 +14,6 @@ class UserStatus(enum.Enum):
 
 
 class UserStatusSearch:
-
     RECORDS = [
         {'user_id': 1, 'created_at': '2017-01-01T10:00:00', 'status': 'paying'},
         {'user_id': 1, 'created_at': '2017-03-01T19:00:00', 'status': 'paying'},
@@ -20,14 +22,24 @@ class UserStatusSearch:
         {'user_id': 3, 'created_at': '2016-02-01T05:00:00', 'status': 'cancelled'},
     ]
 
+    USER_RECORDS = defaultdict(list)
+    USER_RECORDS_BST = defaultdict(Node)
+    bst = BST()
+
     def __init__(self):
-        pass
+        for record in self.RECORDS:
+            user_records = self.USER_RECORDS[record['user_id']]
+            user_records.append(record)
+            self.USER_RECORDS[record['user_id']] = user_records
+
+        for k, v in self.USER_RECORDS.items():
+            self.USER_RECORDS_BST[k] = self.bst.array_to_bst(sorted(v))
 
     def get_status(self, user_id, date):
-        pass
+        self.bst.get_nearest_status(self.USER_RECORDS_BST[user_id], date)
+
 
 class IpRangeSearch:
-
     RANGES = {
         'london': [
             {'start': '10.10.0.0', 'end': '10.10.255.255'},
