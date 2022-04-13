@@ -1,11 +1,12 @@
 import datetime as dt
 import enum
+import ipaddress
 
 from flask import Flask, jsonify, request
 from collections import defaultdict
 
 from balanced_binary_search_tree import BST, Node
-
+from intervaltree import Interval, IntervalTree
 
 class UserStatus(enum.Enum):
     PAYING = "paying",
@@ -52,11 +53,15 @@ class IpRangeSearch:
         ]
     }
 
+    interval_tree = IntervalTree()
+
     def __init__(self):
-        pass
+        for city, ranges in self.RANGES.items():
+            for r in ranges:
+                self.interval_tree.addi(ipaddress.ip_address(r['start']), ipaddress.ip_address(r['end']), city)
 
     def get_city(self, ip):
-        pass
+        return self.interval_tree.at(ipaddress.ip_address(ip))
 
 
 app = Flask(__name__)
