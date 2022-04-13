@@ -1,3 +1,4 @@
 Flask==2.1.1
 intervaltree==3.1.0
 pandas==1.4.2
+pytest=7.1.1
