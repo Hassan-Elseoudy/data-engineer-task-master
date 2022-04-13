@@ -1,11 +1,13 @@
 from datetime import datetime
 from math import inf
 
+from api import UserStatus
+
 INT_MAX = inf
 
 
 class Record:
-    def __init__(self, status, date):
+    def __init__(self, status: UserStatus, date: datetime):
         self.status = status
         self.date = date
 
@@ -26,7 +28,7 @@ class BST:
     """
     def array_to_bst(self, arr: []) -> Node:
         if not arr:
-            return None
+            return Node(Record(UserStatus.PAYING, datetime.now()))
 
         # find middle
         mid = (len(arr)) / 2
