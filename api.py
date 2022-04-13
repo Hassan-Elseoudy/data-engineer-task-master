@@ -1,6 +1,13 @@
 import datetime as dt
+import enum
 
 from flask import Flask, jsonify, request
+
+
+class UserStatus(enum.Enum):
+    PAYING = "paying",
+    CANCELLED = "cancelled"
+    NOT_PAYING = "not_paying"
 
 
 class UserStatusSearch:
