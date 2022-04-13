@@ -7,7 +7,7 @@ DATE_MAX = datetime.max
 class UserStatus(enum.Enum):
     PAYING = "paying",
     CANCELLED = "cancelled"
-    NOT_PAYING = "not_paying"
+    NOT_PAYING = "non_paying"
 
 
 USER_STATUS_DICT = {

@@ -9,6 +9,8 @@ from intervaltree import IntervalTree
 
 from balanced_binary_search_tree import BST, Node, UserStatus, Record, USER_STATUS_DICT
 
+DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
+
 
 class UserStatusSearch:
     RECORDS = [
@@ -27,7 +29,7 @@ class UserStatusSearch:
         for record in self.RECORDS:
             user_records = self.USER_RECORDS[record['user_id']]
             user_records.append(Record(status=USER_STATUS_DICT[record["status"]],
-                                       created_at=dt.datetime.strptime(record["created_at"], '%Y-%m-%dT%H:%M:%S')))
+                                       created_at=dt.datetime.strptime(record["created_at"], DATE_FORMAT)))
             self.USER_RECORDS[record['user_id']] = user_records
 
         for k, v in self.USER_RECORDS.items():
@@ -61,7 +63,7 @@ class IpRangeSearch:
 
     def get_city(self, ip):
         interval = self.interval_tree.at(ipaddress.ip_address(ip))
-        return interval.pop().data if len(interval) else 'NA'
+        return interval.pop().data if len(interval) else 'unknown'
 
 
 app = Flask(__name__)
@@ -78,7 +80,7 @@ def user_status(user_id):
     """
 
     try:
-        date = dt.datetime.strptime(str(request.args.get('date')), '%Y-%m-%dT%H:%M:%S')
+        date = dt.datetime.strptime(str(request.args.get('date')), DATE_FORMAT)
     except ValueError:
         return jsonify({'error': 'Invalid date format'})
 
@@ -106,7 +108,8 @@ def aggregate():
             transactions.append(json.loads(line))
         for t in transactions:
             t['city'] = ip_city(t['ip']).json["city"]
-            t['user_status'] = user_status_search.get_status(int(t['user_id']), dt.datetime.strptime(t["created_at"], '%Y-%m-%dT%H:%M:%S'))
+            t['user_status'] = user_status_search.get_status(int(t['user_id']),
+                                                             dt.datetime.strptime(t["created_at"], DATE_FORMAT))
 
     df = pd.DataFrame.from_records(transactions)
     return df.groupby(['city', 'user_status'])['product_price'].agg('sum').reset_index().to_json(orient='records')

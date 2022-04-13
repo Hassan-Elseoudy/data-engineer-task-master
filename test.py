@@ -8,7 +8,7 @@ def test_na_ip():
     response = app.test_client().get('/ip_city/10.0.0.0', content_type='application/json')
     data = json.loads(response.get_data(as_text=True))
     assert response.status_code == 200
-    assert data['city'] == 'NA'
+    assert data['city'] == 'unknown'
 
 
 def test_munich_ip():
@@ -58,8 +58,9 @@ def test_transactions():
     data = json.loads(response.get_data(as_text=True))
     assert response.status_code == 200
     assert len(data) == 5
-    assert data[0] == {"city": "NA", "user_status": "CANCELLED", "product_price": 541.0}
-    assert data[1] == {"city": "london", "user_status": "NOT_PAYING", "product_price": 241.0}
-    assert data[2] == {"city": "london", "user_status": "PAYING", "product_price": 341.0}
-    assert data[3] == {"city": "munich", "user_status": "NOT_PAYING", "product_price": 541.0}
-    assert data[4] == {"city": "munich", "user_status": "PAYING", "product_price": 20.5}
+    assert data[0] == {"city": "london", "user_status": "NOT_PAYING", "product_price": 241.0}
+    assert data[1] == {"city": "london", "user_status": "PAYING", "product_price": 341.0}
+    assert data[2] == {"city": "munich", "user_status": "NOT_PAYING", "product_price": 541.0}
+    assert data[3] == {"city": "munich", "user_status": "PAYING", "product_price": 20.5}
+    assert data[4] == {"city": "unknown", "user_status": "CANCELLED", "product_price": 541.0}
+
