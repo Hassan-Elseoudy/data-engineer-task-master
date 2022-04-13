@@ -1,15 +1,28 @@
+import enum
 from datetime import datetime
-from math import inf
 
-from api import UserStatus
+DATE_MAX = datetime.max
 
-INT_MAX = inf
+
+class UserStatus(enum.Enum):
+    PAYING = "paying",
+    CANCELLED = "cancelled"
+    NOT_PAYING = "not_paying"
+    NA = "NA"
+
+
+USER_STATUS_DICT = {
+    "paying": UserStatus.PAYING,
+    "cancelled": UserStatus.CANCELLED,
+    "not_paying": UserStatus.NOT_PAYING,
+    "NA": UserStatus.NA,
+}
 
 
 class Record:
-    def __init__(self, status: UserStatus, date: datetime):
+    def __init__(self, status: UserStatus, created_at: datetime):
         self.status = status
-        self.date = date
+        self.created_at = created_at
 
 
 # binary tree node
@@ -26,49 +39,41 @@ class BST:
     input : sorted array of integers
     output: root node of balanced BST
     """
+
     def array_to_bst(self, arr: []) -> Node:
         if not arr:
-            return Node(Record(UserStatus.PAYING, datetime.now()))
+            return Node(Record(UserStatus.NOT_PAYING, DATE_MAX))
 
-        # find middle
-        mid = (len(arr)) / 2
+        # Find Middle
+        mid = len(arr) // 2
 
-        # make the middle element the root
+        # Middle element the root
         root = Node(arr[mid])
 
-        # left subtree of root has all
-        # values <arr[mid]
+        # Left subtree of root has all values < arr[mid]
         root.left = self.array_to_bst(arr[:mid])
 
-        # right subtree of root has all
-        # values >arr[mid]
+        # Right subtree of root has all values > arr[mid]
         root.right = self.array_to_bst(arr[mid + 1:])
+
         return root
 
     """This function is used to find floor of a key"""
-    def get_nearest_status(self, root: Node, key: datetime):
+    def get_nearest_status(self, root: Node, key: datetime) -> Node:
         if not root:
-            return INT_MAX
+            return Node(d=Record(created_at=DATE_MAX, status=UserStatus.NOT_PAYING))
+
+        search_key = root.data.created_at
 
         """ If root.data is equal to key """
-        if root.data == key:
-            return root.data.status
+        if search_key == key:
+            return root
 
         """ If root.data is greater than the key """
-        if root.data.date > key:
+        if search_key > key:
             return self.get_nearest_status(root.left, key)
 
-        """ Else, the floor may lie in right subtree
-        or may be equal to the root"""
+        """ Else, the floor may lie in right subtree or may be equal to the root"""
         floor_value = self.get_nearest_status(root.right, key)
-        return floor_value if (floor_value <= key) else root.data.status
 
-    # A utility function to print the preorder
-    # traversal of the BST
-    def pre_order(self, node: Node):
-        if not node:
-            return
-
-        print(node.data)
-        self.pre_order(node.left)
-        self.pre_order(node.right)
+        return floor_value if (floor_value.data.created_at <= key) else root

@@ -1,20 +1,13 @@
 import datetime as dt
-import enum
 import ipaddress
 import json
 from collections import defaultdict
 
+import pandas as pd
 from flask import Flask, jsonify, request
 from intervaltree import IntervalTree
 
-from balanced_binary_search_tree import BST, Node
-import pandas as pd
-
-class UserStatus(enum.Enum):
-    PAYING = "paying",
-    CANCELLED = "cancelled"
-    NOT_PAYING = "not_paying"
-    NA = "NA"
+from balanced_binary_search_tree import BST, Node, UserStatus, Record, USER_STATUS_DICT
 
 
 class UserStatusSearch:
@@ -33,16 +26,17 @@ class UserStatusSearch:
     def __init__(self):
         for record in self.RECORDS:
             user_records = self.USER_RECORDS[record['user_id']]
-            user_records.append(record)
+            user_records.append(Record(status=USER_STATUS_DICT[record["status"]],
+                                       created_at=dt.datetime.strptime(record["created_at"], '%Y-%m-%dT%H:%M:%S')))
             self.USER_RECORDS[record['user_id']] = user_records
 
         for k, v in self.USER_RECORDS.items():
-            self.USER_RECORDS_BST[k] = self.bst.array_to_bst(sorted(v))
+            self.USER_RECORDS_BST[k] = self.bst.array_to_bst(sorted(v, key=lambda d: d.created_at))
 
-    def get_status(self, user_id, date):
+    def get_status(self, user_id: int, date: dt.datetime):
         if user_id not in self.USER_RECORDS_BST:
             return UserStatus.NA
-        self.bst.get_nearest_status(self.USER_RECORDS_BST[user_id], date)
+        return self.bst.get_nearest_status(self.USER_RECORDS_BST[user_id], date).data.status.name
 
 
 class IpRangeSearch:
