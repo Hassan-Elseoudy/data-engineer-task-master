@@ -60,8 +60,8 @@ class IpRangeSearch:
                 self.interval_tree.addi(ipaddress.ip_address(r['start']), ipaddress.ip_address(r['end']), city)
 
     def get_city(self, ip):
-        city = self.interval_tree.at(ipaddress.ip_address(ip))
-        return city or 'NA'
+        interval = self.interval_tree.at(ipaddress.ip_address(ip))
+        return interval.pop().data if len(interval) else 'NA'
 
 
 app = Flask(__name__)
